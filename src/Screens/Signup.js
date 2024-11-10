@@ -1,26 +1,24 @@
-import * as React from "react";
+import React, { useState } from "react";
 import { loadBlockchainData, loadWeb3 } from "../Web3helpers";
- 
 import { useNavigate } from "react-router-dom";
-export default function SignUp() {
-  const [username, setUsername] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
- 
+
+const SignUp = () => {
   const navigate = useNavigate();
- 
-  const [accounts, setAccounts] = React.useState(null);
-  const [auth, setAuth] = React.useState(null);
- 
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [accounts, setAccounts] = useState(null);
+  const [auth, setAuth] = useState(null);
+  const [image, setImage] = useState(null);
+
   const loadAccounts = async () => {
     let { auth, accounts } = await loadBlockchainData();
- 
     setAccounts(accounts);
     setAuth(auth);
   };
- 
+
   const signUp = async () => {
-    if (!username || !email || !password) {
+    if (!username ||!email ||!password) {
       alert("please fill all details");
       return;
     }
@@ -31,9 +29,9 @@ export default function SignUp() {
     }
     try {
       await auth.methods
-        .createUser(username, email, password)
-        .send({ from: accounts });
- 
+    .createUser(username, email, password)
+    .send({ from: accounts });
+
       localStorage.setItem("username", username);
       localStorage.setItem("email", email);
       navigate("/");
@@ -41,21 +39,87 @@ export default function SignUp() {
       console.log(e.message);
     }
   };
+
   React.useEffect(() => {
     loadWeb3();
   }, []);
- 
+
   React.useEffect(() => {
     loadAccounts();
   }, []);
- 
+
+  const handleImageChange = (event) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImage(reader.result);
+    };
+    reader.readAsDataURL(event.target.files[0]);
+  };
+
+  const handleImageClick = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.click();
+    input.onchange = (event) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImage(reader.result);
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    };
+  };
+
+  const handleCircleClick = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.click();
+    input.onchange = (event) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImage(reader.result);
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    };
+  };
+
   return (
     <div style={rootDiv}>
-      <img
-        src="https://sun9-55.userapi.com/impf/ZgmgrdTgDDnHkbBHgUFhsk_HVRclD6daADbwvA/xxocjpJHLWQ.jpg?size=604x604&quality=96&sign=144881ffb87617074a1d6725b7502b92&type=album"
-        style={image}
-        alt="geeks"
-      />
+      {image? (
+        <div style={imageContainer}>
+          <img
+            src={image}
+            style={imageStyle}
+            alt=""
+            width={150}
+            height={150}
+            onClick={handleImageClick}
+          />
+        </div>
+      ) : (
+        <div style={imageContainer}>
+          <div
+            style={{
+              borderRadius: "50%",
+              width: 150,
+              height: 150,
+              border: "1px solid grey",
+              cursor: "pointer",
+              backgroundImage: "linear-gradient(to bottom, #ccc, #ccc)",
+              backgroundSize: "100% 0%",
+              backgroundPosition: "bottom",
+              transition: "background-position 0.5s ease-in-out",
+            }}
+            onClick={handleCircleClick}
+          />
+        </div>
+      )}
+      {!image && (
+        <div style={{ color: "yellow", fontSize: 14 }}>
+          Пожалуйста, выберите изображение
+        </div>
+      )}
       <input
         style={input}
         value={username}
@@ -83,8 +147,8 @@ export default function SignUp() {
       </button>
     </div>
   );
-}
- 
+};
+
 const rootDiv = {
   display: "flex",
   flexDirection: "column",
@@ -92,8 +156,10 @@ const rootDiv = {
   justifyContent: "center",
   height: "100vh",
   backgroundColor: "#3F4652",
+  width: "100vw",
+  padding: 0,
 };
- 
+
 const input = {
   width: 300,
   padding: 10,
@@ -103,7 +169,7 @@ const input = {
   border: "2px solid grey",
   fontSize: 17,
 };
- 
+
 const button = {
   width: 325,
   padding: 10,
@@ -115,10 +181,18 @@ const button = {
   backgroundColor: "#9D27CD",
   border: "none",
 };
- 
-const image = {
-  width: 70,
-  height: 70,
-  objectFit: "contain",
-  borderRadius: 70,
+
+const imageStyle = {
+  width: 150,
+  height: 150,
+  border: "none",
+  borderRadius: "50%",
+  margin: 10,
+  objectFit: "cover"
 };
+
+const imageContainer = {
+  position: "relative",
+};
+
+export default SignUp;
