@@ -1,59 +1,134 @@
 import * as React from "react";
 import { loadBlockchainData, loadWeb3 } from "../Web3helpers";
 import { useNavigate } from "react-router-dom";
- 
+
 export default function SignIn() {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [image, setImage] = React.useState(null);
+  const [imageFile, setImageFile] = React.useState(null);
   const navigate = useNavigate();
- 
+
   const [accounts, setAccounts] = React.useState(null);
   const [auth, setAuth] = React.useState(null);
- 
+
   const loadAccounts = async () => {
-    let { auth, accounts } = await loadBlockchainData();
- 
-    setAccounts(accounts);
-    setAuth(auth);
+    try {
+      let { auth, accounts } = await loadBlockchainData();
+      console.log('Данные о пользователях:', accounts);
+      console.log('Данные об авторизации:', auth);
+      setAccounts(accounts);
+      setAuth(auth);
+    } catch (error) {
+      console.error('Ошибка загрузки учетных данных:', error);
+      alert("Ошибка загрузки учетных данных");
+    }
   };
- 
+
   const login = async () => {
-    if (!email || !password) {
-      alert("please fill all details");
- 
+    if (!email ||!password ||!image) {
+      alert("Пожалуйста, заполните все поля");
       return;
     }
- 
+
     try {
       const res = await auth.methods.usersList(email).call();
- 
-      if (res.password === password) {
-        localStorage.setItem("email", email);
-        localStorage.setItem("account", accounts);
-        navigate("/Home");
-      } else {
-        alert("wrong user credentials or please signup");
+      if (res.password!== password) {
+        alert("Неправильный пароль или учетная запись не существует");
+        return;
       }
+
+      localStorage.setItem("email", email);
+      localStorage.setItem("account", accounts);
+      localStorage.setItem("image", image); // сохраняем изображение в локальном хранилище
+      navigate("/Home");
     } catch (error) {
-      alert(error.message);
+      alert("Ошибка авторизации");
     }
   };
- 
+
+  const handleImageClick = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.click();
+    input.onchange = (event) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImage(reader.result);
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    };
+  };
+
+  const handleCircleClick = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.click();
+    input.onchange = (event) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImage(reader.result);
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    };
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImage(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
   React.useEffect(() => {
     loadWeb3();
   }, []);
- 
+
   React.useEffect(() => {
     loadAccounts();
   }, []);
- 
+
   return (
     <div style={rootDiv}>
-      <img
-        src="https://sun9-55.userapi.com/impf/ZgmgrdTgDDnHkbBHgUFhsk_HVRclD6daADbwvA/xxocjpJHLWQ.jpg?size=604x604&quality=96&sign=144881ffb87617074a1d6725b7502b92&type=album" 
-        style={image}
-        alt="geeks"
-      />
+      {image? (
+        <div style={imageContainer}>
+          <img
+            src={image}
+            style={imageStyle}
+            alt=""
+            width={150}
+            height={150}
+            onClick={handleImageClick}
+          />
+        </div>
+      ) : (
+        <div style={imageContainer}>
+          <div
+            style={{
+              borderRadius: "50%",
+              width: 150,
+              height: 150,
+              border: "1px solid grey",
+              cursor: "pointer",
+              backgroundImage: "linear-gradient(to bottom, #ccc, #ccc)",
+              backgroundSize: "100% 0%",
+              backgroundPosition: "bottom",
+              transition: "background-position 0.5s ease-in-out",
+            }}
+            onClick={handleCircleClick}
+          />
+        </div>
+      )}
+      {!image && (
+        <div style={{ color: "yellow", fontSize: 16 }}>
+          Пожалуйста, выберите изображение
+        </div>
+      )}
       <input
         style={input}
         value={email}
@@ -65,14 +140,14 @@ export default function SignIn() {
         style={input}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        placeholder="Other param"
+        placeholder="Пароль"
         type="password"
       />
       <button style={button} onClick={login}>
         {" "}
-        Sign In
+        Войти
       </button>
- 
+
       <span
         style={{ cursor: "pointer" }}
         onClick={() => {
@@ -80,21 +155,23 @@ export default function SignIn() {
         }}
       >
         {" "}
-        Create new account{" "}
+        Создать новую учетную запись{" "}
       </span>
     </div>
   );
 }
- 
+
 const rootDiv = {
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
   height: "100vh",
-  backgroundColor: "#808080",
+  backgroundColor: "#3F4652",
+  width: "100vw",
+  padding: 0,
 };
- 
+
 const input = {
   width: 300,
   padding: 10,
@@ -104,7 +181,20 @@ const input = {
   border: "2px solid grey",
   fontSize: 17,
 };
- 
+
+const imageStyle = {
+  width: 150,
+  height: 150,
+  border: "none",
+  borderRadius: "50%",
+  margin: 10,
+  objectFit: "cover",
+};
+
+const imageContainer = {
+  position: "relative",
+};
+
 const button = {
   width: 325,
   padding: 10,
@@ -115,11 +205,4 @@ const button = {
   color: "white",
   backgroundColor: "#9D27CD",
   border: "none",
-};
- 
-const image = {
-  width: 70,
-  height: 70,
-  objectFit: "contain",
-  borderRadius: 70,
 };
