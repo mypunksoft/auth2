@@ -12,6 +12,7 @@
     "@testing-library/user-event": "^13.5.0",
     "base64-js": "^1.5.1",
     "dialogflow": "^1.2.0",
+    "dotenv": "^16.4.5",
     "file-saver": "^2.0.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

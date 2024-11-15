@@ -125,7 +125,7 @@ export default function SignIn() {
         </div>
       )}
       {!image && (
-        <div style={{ color: "yellow", fontSize: 16 }}>
+        <div style={{ color: "yellow",  margin: 15,fontSize: 16 }}>
           Пожалуйста, выберите изображение
         </div>
       )}
@@ -187,7 +187,7 @@ const imageStyle = {
   height: 150,
   border: "none",
   borderRadius: "50%",
-  margin: 10,
+  margin: 15,
   objectFit: "cover",
 };
 

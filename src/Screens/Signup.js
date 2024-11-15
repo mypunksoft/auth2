@@ -116,7 +116,7 @@ const SignUp = () => {
         </div>
       )}
       {!image && (
-        <div style={{ color: "yellow", fontSize: 14 }}>
+        <div style={{ color: "yellow", margin: 10,fontSize: 14 }}>
           Пожалуйста, выберите изображение
         </div>
       )}
@@ -187,7 +187,7 @@ const imageStyle = {
   height: 150,
   border: "none",
   borderRadius: "50%",
-  margin: 10,
+  margin: 20,
   objectFit: "cover"
 };
 
