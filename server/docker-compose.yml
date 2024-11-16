@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - PGHOST=db
+      - PGUSER=postgres
+      - PGPASSWORD=1
+      - PGDATABASE=mydatabase
+      - PGPORT=5432
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - /app/node_modules # Игнорируем node_modules для оптимизации
+
+  db:
+    image: postgres:15
+    container_name: postgres_container
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql # Подключаем файл инициализации
+
+volumes:
+  db_data:
