@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { loadBlockchainData, loadWeb3 } from "../Web3helpers";
 import { useNavigate } from "react-router-dom";
 
@@ -18,23 +18,38 @@ const SignUp = () => {
   };
 
   const signUp = async () => {
-    if (!username ||!email ||!password) {
-      alert("please fill all details");
+    if (!username || !email || !password || !image) {
+      alert("Пожалуйста, заполните все поля");
       return;
     }
-    var mailformat = /^\w+([-]?\w+)*@\w+([-]?\w+)*(\.\w{2,3})+$/;
+
+    const mailformat = /^\w+([-]?\w+)*@\w+([-]?\w+)*(\.\w{2,3})+$/;
     if (!email.match(mailformat)) {
-      alert("please enter valid email address");
+      alert("Пожалуйста, введите корректный адрес электронной почты");
       return;
     }
+
     try {
-      await auth.methods
-    .createUser(username, email, password)
-    .send({ from: accounts });
+      const response = await auth.methods
+        .createUser(username, email, password)
+        .send({ from: accounts });
 
       localStorage.setItem("username", username);
       localStorage.setItem("email", email);
-      navigate("/");
+
+      await fetch("http://localhost:5000/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          image,
+        }),
+      });
+
+      navigate("/security-questions");
     } catch (e) {
       console.log(e.message);
     }
@@ -57,9 +72,9 @@ const SignUp = () => {
   };
 
   const handleImageClick = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
     input.click();
     input.onchange = (event) => {
       const reader = new FileReader();
@@ -71,9 +86,9 @@ const SignUp = () => {
   };
 
   const handleCircleClick = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
     input.click();
     input.onchange = (event) => {
       const reader = new FileReader();
@@ -86,7 +101,7 @@ const SignUp = () => {
 
   return (
     <div style={rootDiv}>
-      {image? (
+      {image ? (
         <div style={imageContainer}>
           <img
             src={image}
@@ -116,7 +131,7 @@ const SignUp = () => {
         </div>
       )}
       {!image && (
-        <div style={{ color: "yellow", margin: 10,fontSize: 14 }}>
+        <div style={{ color: "yellow", margin: 10, fontSize: 14 }}>
           Пожалуйста, выберите изображение
         </div>
       )}
@@ -124,26 +139,25 @@ const SignUp = () => {
         style={input}
         value={username}
         onChange={(e) => setUsername(e.target.value)}
-        placeholder="Username"
+        placeholder="Имя пользователя"
         type="text"
       />
       <input
         style={input}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder="Email"
+        placeholder="Электронная почта"
         type="text"
       />
       <input
         style={input}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        placeholder="Other param"
+        placeholder="Пароль"
         type="password"
       />
       <button style={button} onClick={signUp}>
-        {" "}
-        Sign Up
+        Зарегистрироваться
       </button>
     </div>
   );
@@ -188,7 +202,7 @@ const imageStyle = {
   border: "none",
   borderRadius: "50%",
   margin: 20,
-  objectFit: "cover"
+  objectFit: "cover",
 };
 
 const imageContainer = {

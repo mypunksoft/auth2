@@ -15,42 +15,70 @@ export default function SignIn() {
   const loadAccounts = async () => {
     try {
       let { auth, accounts } = await loadBlockchainData();
-      console.log('Данные о пользователях:', accounts);
-      console.log('Данные об авторизации:', auth);
+      console.log("Данные о пользователях:", accounts);
+      console.log("Данные об авторизации:", auth);
       setAccounts(accounts);
       setAuth(auth);
     } catch (error) {
-      console.error('Ошибка загрузки учетных данных:', error);
+      console.error("Ошибка загрузки учетных данных:", error);
       alert("Ошибка загрузки учетных данных");
     }
   };
 
+  const verifyImage = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/verify-image", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, image }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert("Изображение подтверждено");
+        return true;
+      } else {
+        alert(result.message || "Ошибка проверки изображения");
+        return false;
+      }
+    } catch (error) {
+      console.error("Ошибка при проверке изображения:", error);
+      alert("Ошибка при подключении к серверу");
+      return false;
+    }
+  };
+
   const login = async () => {
-    if (!email ||!password ||!image) {
+    if (!email || !password || !image) {
       alert("Пожалуйста, заполните все поля");
       return;
     }
 
+    const isImageVerified = await verifyImage();
+    if (!isImageVerified) return;
+
     try {
       const res = await auth.methods.usersList(email).call();
-      if (res.password!== password) {
+      if (res.password !== password) {
         alert("Неправильный пароль или учетная запись не существует");
         return;
       }
 
       localStorage.setItem("email", email);
       localStorage.setItem("account", accounts);
-      localStorage.setItem("image", image); // сохраняем изображение в локальном хранилище
-      navigate("/Home");
+      navigate(`/securityans`);
     } catch (error) {
       alert("Ошибка авторизации");
     }
   };
 
   const handleImageClick = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
     input.click();
     input.onchange = (event) => {
       const reader = new FileReader();
@@ -59,30 +87,6 @@ export default function SignIn() {
       };
       reader.readAsDataURL(event.target.files[0]);
     };
-  };
-
-  const handleCircleClick = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.click();
-    input.onchange = (event) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImage(reader.result);
-      };
-      reader.readAsDataURL(event.target.files[0]);
-    };
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImage(reader.result);
-    };
-    reader.readAsDataURL(file);
   };
 
   React.useEffect(() => {
@@ -95,7 +99,7 @@ export default function SignIn() {
 
   return (
     <div style={rootDiv}>
-      {image? (
+      {image ? (
         <div style={imageContainer}>
           <img
             src={image}
@@ -120,12 +124,12 @@ export default function SignIn() {
               backgroundPosition: "bottom",
               transition: "background-position 0.5s ease-in-out",
             }}
-            onClick={handleCircleClick}
+            onClick={handleImageClick}
           />
         </div>
       )}
       {!image && (
-        <div style={{ color: "yellow",  margin: 15,fontSize: 16 }}>
+        <div style={{ color: "yellow", margin: 15, fontSize: 16 }}>
           Пожалуйста, выберите изображение
         </div>
       )}
@@ -144,7 +148,6 @@ export default function SignIn() {
         type="password"
       />
       <button style={button} onClick={login}>
-        {" "}
         Войти
       </button>
 
@@ -154,8 +157,7 @@ export default function SignIn() {
           navigate("/Signup");
         }}
       >
-        {" "}
-        Создать новую учетную запись{" "}
+        Создать новую учетную запись
       </span>
     </div>
   );
